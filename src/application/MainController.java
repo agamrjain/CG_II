@@ -310,8 +310,8 @@ public class MainController implements Initializable {
 			RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
 			String txt = app.getText();
 			String mode = od_eod_choiceBox.getValue();
-			//String QUEUE_NAME = qMaker(txt, mode);
-			String QUEUE_NAME = "test_q";
+			String QUEUE_NAME = qMaker(txt, mode);
+			//String QUEUE_NAME = "test_q";
 			
 			String host = !serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim(): Constants.DEFAULT_HOST;
 			String username = !userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim() : Constants.DEFAULT_USERNAME;
