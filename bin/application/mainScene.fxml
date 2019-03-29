@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
@@ -8,9 +9,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="500.0" maxWidth="620.0" prefHeight="500.0" prefWidth="620.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
+<AnchorPane maxHeight="500.0" maxWidth="729.0" prefHeight="500.0" prefWidth="729.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainController">
    <children>
-      <HBox layoutX="47.0" layoutY="41.0" prefHeight="40.0" prefWidth="250.0">
+      <HBox layoutX="89.0" layoutY="34.0" prefHeight="40.0" prefWidth="250.0">
          <children>
             <Label prefHeight="32.0" prefWidth="105.0" text="Module">
                <font>
@@ -19,7 +20,7 @@
             <ChoiceBox fx:id="mainchoiceBox" prefHeight="26.0" prefWidth="150.0" />
          </children>
       </HBox>
-      <HBox layoutX="355.0" layoutY="41.0" prefHeight="40.0" prefWidth="220.0">
+      <HBox layoutX="414.0" layoutY="27.0" prefHeight="40.0" prefWidth="220.0">
          <children>
             <Label prefHeight="32.0" prefWidth="60.0" text="Mode">
                <font>
@@ -84,10 +85,16 @@
       </GridPane>
       <Separator layoutX="214.0" layoutY="89.0" prefWidth="200.0" />
       <Separator layoutX="314.0" layoutY="100.0" orientation="VERTICAL" prefHeight="200.0" />
-      <TextArea fx:id="cArea" layoutX="35.0" layoutY="349.0" prefHeight="138.0" prefWidth="529.0" />
-      <TextArea fx:id="errorArea" layoutX="347.0" layoutY="254.0" prefHeight="40.0" prefWidth="250.0" />
-      <Button fx:id="sendButton" layoutX="481.0" layoutY="300.0" mnemonicParsing="false" onAction="#sendButtonCallback" prefHeight="25.0" prefWidth="109.0" text="Send" />
+      <TextArea fx:id="cArea" layoutX="54.0" layoutY="317.0" prefHeight="138.0" prefWidth="257.0" />
+      <TextArea fx:id="errorArea" layoutX="332.0" layoutY="254.0" prefHeight="95.0" prefWidth="265.0" />
+      <Button fx:id="sendButton" layoutX="482.0" layoutY="361.0" mnemonicParsing="false" onAction="#sendButtonCallback" prefHeight="25.0" prefWidth="109.0" text="Send" />
       <TextArea fx:id="errorAreaGen" layoutX="57.0" layoutY="254.0" prefHeight="40.0" prefWidth="250.0" />
+      <Group>
+         <children>
+            <RadioButton fx:id="radioB_tpt" layoutX="14.0" layoutY="56.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="95.0" text="TPT" />
+            <RadioButton fx:id="radioB_cxl" layoutX="14.0" layoutY="27.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="103.0" text="CXL" />
+         </children>
+      </Group>
    </children>
    <padding>
       <Insets top="10.0" />

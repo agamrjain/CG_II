@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="CG_II.jnlp">
+  <information>
+    <title>CG_II</title>
+    <vendor>Agam</vendor>
+    <description>CommandGenerator</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="CG_II.jar" size="11143" download="eager" />
+    <jar href="libs\amqp-client-5.6.0.jar" size="600738" download="eager" />
+  </resources>
+  <jfx:javafx-desc  width="0" height="0" main-class="application.Main"  name="CommandGenerator" />
+  <update check="background"/>
+</jnlp>

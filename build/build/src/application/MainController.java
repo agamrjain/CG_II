@@ -22,10 +22,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,20 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
- 
 import com.rabbitmq.client.Channel;
 
 public class MainController implements Initializable {
@@ -399,34 +381,34 @@ public class MainController implements Initializable {
 	}
 
 	
-	private static String formatXML(Document document) throws TransformerException {
-	    TransformerFactory transformerFactory = TransformerFactory
-	            .newInstance();
-	    Transformer transformer = transformerFactory.newTransformer();
-	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	    transformer.setOutputProperty(
-	            "{http://xml.apache.org/xslt}indent-amount", "2");
-	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-	    DOMSource source = new DOMSource(document);
-	    StringWriter strWriter = new StringWriter();
-	    StreamResult result = new StreamResult(strWriter);
-	 
-	    transformer.transform(source, result);
-	 
-	    return strWriter.getBuffer().toString();
-	 
-	}
+//	private static String formatXML(Document document) throws TransformerException {
+//	    TransformerFactory transformerFactory = TransformerFactory
+//	            .newInstance();
+//	    Transformer transformer = transformerFactory.newTransformer();
+//	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//	    transformer.setOutputProperty(
+//	            "{http://xml.apache.org/xslt}indent-amount", "2");
+//	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+//	    DOMSource source = new DOMSource(document);
+//	    StringWriter strWriter = new StringWriter();
+//	    StreamResult result = new StreamResult(strWriter);
+//	 
+//	    transformer.transform(source, result);
+//	 
+//	    return strWriter.getBuffer().toString();
+//	 
+//	}
 	
-	private static Document toXmlDocument(String str) throws ParserConfigurationException, SAXException, IOException {
- 
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-                .newInstance();
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document document = docBuilder.parse(new InputSource(new StringReader(
-                str)));
- 
-        return document;
-    }
+//	private static Document toXmlDocument(String str) throws ParserConfigurationException, SAXException, IOException {
+// 
+//        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
+//                .newInstance();
+//        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+//        Document document = docBuilder.parse(new InputSource(new StringReader(
+//                str)));
+// 
+//        return document;
+//    }
 	
 //	 public static String format(String xml, Boolean ommitXmlDeclaration) throws IOException, SAXException, ParserConfigurationException {
 //         

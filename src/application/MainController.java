@@ -5,7 +5,8 @@ package application;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -18,14 +19,13 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,20 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
- 
 import com.rabbitmq.client.Channel;
 
 public class MainController implements Initializable {
@@ -103,7 +89,16 @@ public class MainController implements Initializable {
 
 	@FXML
 	TextArea errorAreaGen;
-
+	
+	@FXML
+	RadioButton radioB_cxl;
+	
+	@FXML
+	RadioButton radioB_tpt;
+	
+	ToggleGroup radioGroup = new ToggleGroup();
+	
+		
 	CommandClassNew cAtPresend;
 
 	public CommandClassNew getcAtPresend() {
@@ -113,10 +108,14 @@ public class MainController implements Initializable {
 	public void setcAtPresend(CommandClassNew cAtPresend) {
 		this.cAtPresend = cAtPresend;
 	}
-
+	
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		init();
+		radioB_cxl.setToggleGroup(radioGroup);
+		radioB_tpt.setToggleGroup(radioGroup);
+		
 		mainchoiceBox.getItems().addAll(listForMainChoiceBox);
 		mainchoiceBox.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -137,14 +136,27 @@ public class MainController implements Initializable {
 			}
 		});
 
-		passwordFeild.setText(Constants.DEFAULT_PASSWORD);
-		vHostFeild.setText(Constants.DEFAULT_vHOST);
-		userNameFeild.setText(Constants.DEFAULT_USERNAME);
 		serverAddressFeild.setText(Constants.DEFAULT_HOST);
-	}
+		passwordFeild.setText(Constants.DEFAULT_PASSWORD);
+		
+		userNameFeild.setText(Constants.DEFAULT_USERNAME);
+		RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
+		radioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 
-	public void sendMsgToRMQ() {
-
+			@Override
+			public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) {
+				RadioButton r = (RadioButton) newValue;
+				String systemName = r.getText();
+				String vhost = "";
+				if (systemName.equals("CXL")) {
+				vhost = Constants.DEFAULT_CXL_vHOST;
+				}else {
+					vhost = Constants.DEFAULT_TPT_vHOST;
+				}
+				vHostFeild.setText(vhost);
+			}
+		});
+		
 	}
 
 	private void makeCompleteLayout() {
@@ -282,17 +294,37 @@ public class MainController implements Initializable {
 
 	}
 
+	public String qMaker(String system, String EODorOD) {
+		
+		//tpt_adaptor_eod_parameters_q
+		String q = system + "_adaptor_" + EODorOD + "_parameters_q";
+		return q.toLowerCase();
+		
+		
+	}
+	
 	public void sendButtonCallback() {
 
 		try {
-			String QUEUE_NAME = od_eod_choiceBox.getValue().equals("EOD") ? Constants.CXL_EOD_Q:Constants.CXL_OD_Q;
+			
+			RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
+			String txt = app.getText();
+			String mode = od_eod_choiceBox.getValue();
+			//String QUEUE_NAME = qMaker(txt, mode);
+			String QUEUE_NAME = "test_q";
+			
+			String host = !serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim(): Constants.DEFAULT_HOST;
+			String username = !userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim() : Constants.DEFAULT_USERNAME;
+			String password = !passwordFeild.getText().trim().equals("") ? passwordFeild.getText().trim() : Constants.DEFAULT_PASSWORD;
+			String vhost;
+			if (txt.equals("CXL")) {
+				vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim(): Constants.DEFAULT_CXL_vHOST;
+			}else {
+				vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim(): Constants.DEFAULT_TPT_vHOST;
+			}
+			
+			
 			ConnectionFactory factory = new ConnectionFactory();
-			
-			String host = serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim(): Constants.DEFAULT_HOST;
-			String username = userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim() : Constants.DEFAULT_USERNAME;
-			String password = passwordFeild.getText().trim().equals("") ? passwordFeild.getText().trim() : Constants.DEFAULT_PASSWORD;
-			String vhost = vHostFeild.getText().trim().equals("") ?vHostFeild.getText().trim(): Constants.DEFAULT_vHOST;
-			
 			factory.setHost(host);
 			factory.setUsername(username);
 			factory.setPassword(password);
@@ -329,6 +361,7 @@ public class MainController implements Initializable {
 			channel.close();
 			connection.close();
 		} catch (Exception e) {
+			
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setTitle("Error Dialog");
 			alert.setHeaderText("Error");
@@ -399,34 +432,34 @@ public class MainController implements Initializable {
 	}
 
 	
-	private static String formatXML(Document document) throws TransformerException {
-	    TransformerFactory transformerFactory = TransformerFactory
-	            .newInstance();
-	    Transformer transformer = transformerFactory.newTransformer();
-	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	    transformer.setOutputProperty(
-	            "{http://xml.apache.org/xslt}indent-amount", "2");
-	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-	    DOMSource source = new DOMSource(document);
-	    StringWriter strWriter = new StringWriter();
-	    StreamResult result = new StreamResult(strWriter);
-	 
-	    transformer.transform(source, result);
-	 
-	    return strWriter.getBuffer().toString();
-	 
-	}
+//	private static String formatXML(Document document) throws TransformerException {
+//	    TransformerFactory transformerFactory = TransformerFactory
+//	            .newInstance();
+//	    Transformer transformer = transformerFactory.newTransformer();
+//	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//	    transformer.setOutputProperty(
+//	            "{http://xml.apache.org/xslt}indent-amount", "2");
+//	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+//	    DOMSource source = new DOMSource(document);
+//	    StringWriter strWriter = new StringWriter();
+//	    StreamResult result = new StreamResult(strWriter);
+//	 
+//	    transformer.transform(source, result);
+//	 
+//	    return strWriter.getBuffer().toString();
+//	 
+//	}
 	
-	private static Document toXmlDocument(String str) throws ParserConfigurationException, SAXException, IOException {
- 
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-                .newInstance();
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document document = docBuilder.parse(new InputSource(new StringReader(
-                str)));
- 
-        return document;
-    }
+//	private static Document toXmlDocument(String str) throws ParserConfigurationException, SAXException, IOException {
+// 
+//        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
+//                .newInstance();
+//        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+//        Document document = docBuilder.parse(new InputSource(new StringReader(
+//                str)));
+// 
+//        return document;
+//    }
 	
 //	 public static String format(String xml, Boolean ommitXmlDeclaration) throws IOException, SAXException, ParserConfigurationException {
 //         
