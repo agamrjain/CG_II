@@ -348,6 +348,7 @@ public class MainController implements Initializable {
 
 			channel.close();
 			connection.close();
+			updateQueuePane(systemName);
 		} catch (Exception e) {
 
 			makeErrorDialog(e, "Please login");
@@ -406,7 +407,7 @@ public class MainController implements Initializable {
 				} catch (Exception e) {
 					qName = "";
 					q = null;
-					System.err.println("Out Of bound error.");
+					System.err.println("Index out Of bound error.");
 				}
 
 				if (q != null) {
@@ -520,7 +521,7 @@ public class MainController implements Initializable {
 			default:
 				break;
 			}
-			qList.add(new QueueDetail(system + "_notification_q"));
+			qList.add(new QueueDetail(system + "_notification_eod_q"));
 
 		default:
 			break;
