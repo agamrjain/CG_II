@@ -21,11 +21,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.TextAlignment;
-
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
@@ -36,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeoutException;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -516,12 +510,12 @@ public class MainController implements Initializable {
 			case Constants.POSITION:
 				qList.add(new QueueDetail(system + "_adaptor_eod_positions_mnth_q"));
 				qList.add(new QueueDetail(system + "_adaptor_eod_positions_non_mnth_q"));
-				qList.add(new QueueDetail(system + "_eod_positions_q"));
+				qList.add(new QueueDetail(system + "_positions_eod_q"));
 				break;
 			case Constants.CASHFLOW:
 				qList.add(new QueueDetail(system + "_adaptor_eod_cashflows_act_q"));
 				qList.add(new QueueDetail(system + "_adaptor_eod_cashflows_cfm_q"));
-				qList.add(new QueueDetail(system + "_eod_cashflows_q"));
+				qList.add(new QueueDetail(system + "_cashflows_eod_q"));
 				break;
 			default:
 				break;
