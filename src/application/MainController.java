@@ -503,15 +503,15 @@ public class MainController implements Initializable {
 
 		switch (mode) {
 		case Constants.ON_DEMAND:
-			qList.add(new QueueDetail(system + "_adaptor_on_demand_parameter_q"));
+			qList.add(new QueueDetail(system + "_adaptor_on_demand_parameters_q"));
 			modeString = "on_demand";
 			moduleString = getModuleStringForQ(module);
 			qList.add(new QueueDetail(String.join("_", system, "adaptor", modeString, moduleString, "q")));
 			qList.add(new QueueDetail(String.join("_", system, moduleString, "q")));
 			break;
 		case Constants.EOD:
-			qList.add(new QueueDetail(system + "_adaptor_eod_parameter_q"));
-			qList.add(new QueueDetail(system + "_notifications_manifest_q"));
+			qList.add(new QueueDetail(system + "_adaptor_eod_parameters_q"));
+			qList.add(new QueueDetail(system + "_notification_manifest_q"));
 			switch (module) {
 			case Constants.POSITION:
 				qList.add(new QueueDetail(system + "_adaptor_eod_positions_mnth_q"));
@@ -526,7 +526,7 @@ public class MainController implements Initializable {
 			default:
 				break;
 			}
-			qList.add(new QueueDetail(system + "_notifications_q"));
+			qList.add(new QueueDetail(system + "_notification_q"));
 
 		default:
 			break;
