@@ -1,0 +1,19 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+.label2
+{
+	-fx-alignment: center;
+	-fx-padding: 50px;
+}
+
+.label3
+{
+	-fx-font-weight: bold;
+	-fx-padding: 5px;
+}
+
+.label4
+{
+	-fx-padding: 5px;
+}
+

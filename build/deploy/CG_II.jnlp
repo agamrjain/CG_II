@@ -8,8 +8,9 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="CG_II.jar" size="11143" download="eager" />
+    <jar href="CG_II.jar" size="12468" download="eager" />
     <jar href="libs\amqp-client-5.6.0.jar" size="600738" download="eager" />
+    <jar href="libs\slf4j-api-1.7.26.jar" size="41139" download="eager" />
   </resources>
   <jfx:javafx-desc  width="0" height="0" main-class="application.Main"  name="CommandGenerator" />
   <update check="background"/>

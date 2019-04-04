@@ -20,8 +20,11 @@ public interface Constants {
 	String DEFAULT_HOST = "kst-rabbitmq-nonprod.kochind.com";
 	String DEFAULT_USERNAME = "krishna.ammanabrolu@kochind.com";
 	String DEFAULT_PASSWORD = "krishnaammanabrolu2018";
-	String DEFAULT_vHOST = "dev2_cxlAdapter";
+	String DEFAULT_CXL_vHOST = "dev2_cxlAdapter";
+	String DEFAULT_TPT_vHOST = "/dev3_tptadapter";
 
+	
+	
 	String CXL_OD_Q ="cxl_adaptor_on_demand_parameters_q";
 	String CXL_EOD_Q ="cxl_adaptor_eod_parameters_q";
 

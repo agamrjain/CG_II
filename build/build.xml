@@ -24,6 +24,11 @@
 				<filename name="amqp-client-5.6.0.jar"/>
 			</fileset>
 		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\agajain\git\CG_II\jars">
+				<filename name="slf4j-api-1.7.26.jar"/>
+			</fileset>
+		</copy>
 	
 		<mkdir dir="project" />
 		<copy todir="project">
@@ -44,6 +49,7 @@
 		<copy todir="build/libs">
 			<fileset dir="externalLibs">
 				<include name="amqp-client-5.6.0.jar"/>
+				<include name="slf4j-api-1.7.26.jar"/>
 			</fileset>
 		</copy>
 	
@@ -111,7 +117,7 @@
 			<manifest>
 				<attribute name="Implementation-Vendor" value="Agam"/>
 				<attribute name="Implementation-Title" value="CommandGenerator"/>
-				<attribute name="Implementation-Version" value="2"/>
+				<attribute name="Implementation-Version" value="3"/>
 				<attribute name="JavaFX-Feature-Proxy" value="None"/>
 			</manifest>
 		</fx:jar>

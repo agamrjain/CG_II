@@ -1,10 +1,7 @@
 package application;
 
-
-
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -24,8 +21,13 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.TextAlignment;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +36,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeoutException;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import com.rabbitmq.client.Channel;
 
@@ -82,6 +92,9 @@ public class MainController implements Initializable {
 	GridPane gridPane;
 
 	@FXML
+	GridPane queuePane;
+
+	@FXML
 	PasswordField passwordFeild;
 
 	@FXML
@@ -89,17 +102,23 @@ public class MainController implements Initializable {
 
 	@FXML
 	TextArea errorAreaGen;
-	
+
 	@FXML
 	RadioButton radioB_cxl;
-	
+
 	@FXML
 	RadioButton radioB_tpt;
-	
+
+	@FXML
+	Button refreshButton;
+
 	ToggleGroup radioGroup = new ToggleGroup();
-	
-		
+
 	CommandClassNew cAtPresend;
+
+	Label[] labelQNameArray = new Label[6];
+	Label[] labelTotalMsgArray = new Label[6];
+	Label[] labelTotalConsumerArray = new Label[6];
 
 	public CommandClassNew getcAtPresend() {
 		return cAtPresend;
@@ -108,21 +127,22 @@ public class MainController implements Initializable {
 	public void setcAtPresend(CommandClassNew cAtPresend) {
 		this.cAtPresend = cAtPresend;
 	}
-	
-	
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		init();
+		initQueueGridPane();
+
 		radioB_cxl.setToggleGroup(radioGroup);
 		radioB_tpt.setToggleGroup(radioGroup);
-		
+
 		mainchoiceBox.getItems().addAll(listForMainChoiceBox);
 		mainchoiceBox.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				String a = mainchoiceBox.getSelectionModel().getSelectedItem();
-				mainChoiceBoxSelected(a);
+				String selectedValue = mainchoiceBox.getSelectionModel().getSelectedItem();
+				mainChoiceBoxSelected(selectedValue);
 			}
 		});
 
@@ -132,15 +152,15 @@ public class MainController implements Initializable {
 			public void handle(ActionEvent event) {
 
 				makeCompleteLayout();
+				updateQueuePane(getSystemName());
 
 			}
 		});
 
 		serverAddressFeild.setText(Constants.DEFAULT_HOST);
 		passwordFeild.setText(Constants.DEFAULT_PASSWORD);
-		
+
 		userNameFeild.setText(Constants.DEFAULT_USERNAME);
-		RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
 		radioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 
 			@Override
@@ -149,19 +169,22 @@ public class MainController implements Initializable {
 				String systemName = r.getText();
 				String vhost = "";
 				if (systemName.equals("CXL")) {
-				vhost = Constants.DEFAULT_CXL_vHOST;
-				}else {
+					vhost = Constants.DEFAULT_CXL_vHOST;
+				} else {
 					vhost = Constants.DEFAULT_TPT_vHOST;
 				}
 				vHostFeild.setText(vhost);
 			}
 		});
-		
+
+	}
+
+	public void refreshButtonCallback() {
+		updateQueuePane(getSystemName());
 	}
 
 	private void makeCompleteLayout() {
 
-		
 		String x = mainchoiceBox.getValue();
 		String y = od_eod_choiceBox.getValue();
 
@@ -282,59 +305,43 @@ public class MainController implements Initializable {
 
 			String type = getType(od_eod_choiceBox.getValue(), mainchoiceBox.getValue());
 			String command = cAtPresend.generateCommandStructure(type, prop1, value1, cobDateString, mktS, eventType);
-
-			//command = format(command, false);
-			//command = formatXML(toXmlDocument(command));
+			command = prettyFormat(command, "2");
 			cArea.setText(command);
-			//sendButton.setDisable(true);
 		} catch (Exception e) {
-			errorAreaGen.setStyle(STYLE_ERROR);
-			errorAreaGen.setText(e.toString());
+			showError(e);
 		}
 
 	}
 
+	private void showError(Exception e) {
+		errorAreaGen.setVisible(true);
+		errorAreaGen.setStyle(STYLE_ERROR);
+		errorAreaGen.setText(e.toString());
+	}
+
 	public String qMaker(String system, String EODorOD) {
-		
-		//tpt_adaptor_eod_parameters_q
+
+		// tpt_adaptor_eod_parameters_q
 		String q = system + "_adaptor_" + EODorOD + "_parameters_q";
 		return q.toLowerCase();
-		
-		
+
 	}
-	
+
 	public void sendButtonCallback() {
 
 		try {
-			
-			RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
-			String txt = app.getText();
+
+			String systemName = getSystemName();
 			String mode = od_eod_choiceBox.getValue();
-			String QUEUE_NAME = qMaker(txt, mode);
-			//String QUEUE_NAME = "test_q";
-			
-			String host = !serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim(): Constants.DEFAULT_HOST;
-			String username = !userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim() : Constants.DEFAULT_USERNAME;
-			String password = !passwordFeild.getText().trim().equals("") ? passwordFeild.getText().trim() : Constants.DEFAULT_PASSWORD;
-			String vhost;
-			if (txt.equals("CXL")) {
-				vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim(): Constants.DEFAULT_CXL_vHOST;
-			}else {
-				vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim(): Constants.DEFAULT_TPT_vHOST;
-			}
-			
-			
-			ConnectionFactory factory = new ConnectionFactory();
-			factory.setHost(host);
-			factory.setUsername(username);
-			factory.setPassword(password);
-			factory.setVirtualHost(vhost);
-			
-			
+
+			String QUEUE_NAME = qMaker(systemName, mode);
+
+			ConnectionFactory factory = getConnectionFactory(systemName);
+
 			Connection connection = factory.newConnection();
 			Channel channel = connection.createChannel();
 			String message = cArea.getText();
-			if (message!=null && !message.equals(""))
+			if (message != null && !message.equals(""))
 				channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
 			else {
 				errorArea.setVisible(true);
@@ -344,30 +351,188 @@ public class MainController implements Initializable {
 			errorArea.setVisible(true);
 			errorArea.setStyle(STYLE_SUCCESS);
 			errorArea.setText("Send Succesfully to: " + QUEUE_NAME);
-			
-			
-//			Queue.DeclareOk response = channel.queueDeclarePassive("test");
-//			// returns the number of messages in Ready state in the queue
-//			response.getMessageCount();
-//			// returns the number of consumers the queue has
-//			//response.getConsumerCount();
-//			System.out.println("Message count in test: "+ response.getMessageCount());
-			
-			
-			
-			
-			
-			
+
 			channel.close();
 			connection.close();
 		} catch (Exception e) {
-			
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Error Dialog");
-			alert.setHeaderText("Error");
-			alert.setContentText(e.toString());
-			alert.showAndWait();
+
+			makeErrorDialog(e, "Please login");
 		}
+	}
+
+	private void makeErrorDialog(Exception e, String msg) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setTitle("Error Dialog");
+		alert.setHeaderText(msg);
+		alert.setContentText(e.toString());
+		alert.showAndWait();
+	}
+
+	private String getSystemName() {
+		RadioButton app = (RadioButton) radioGroup.getSelectedToggle();
+		String systemName = app.getText();
+		return systemName;
+	}
+
+	private ConnectionFactory getConnectionFactory(String a) {
+		String host = !serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim()
+				: Constants.DEFAULT_HOST;
+		String username = !userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim()
+				: Constants.DEFAULT_USERNAME;
+		String password = !passwordFeild.getText().trim().equals("") ? passwordFeild.getText().trim()
+				: Constants.DEFAULT_PASSWORD;
+		String vhost;
+		if (a.equals("CXL")) {
+			vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim() : Constants.DEFAULT_CXL_vHOST;
+		} else {
+			vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim() : Constants.DEFAULT_TPT_vHOST;
+		}
+
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost(host);
+		factory.setUsername(username);
+		factory.setPassword(password);
+		factory.setVirtualHost(vhost);
+		return factory;
+	}
+
+	private void updateQueuePane(String systemName) {
+		ArrayList<QueueDetail> qList = getQueueList(systemName.toLowerCase(), od_eod_choiceBox.getValue(),
+				mainchoiceBox.getValue());
+		ConnectionFactory factory = getConnectionFactory(getSystemName());
+		try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
+			for (int i = 0; i < 6; i++) {
+				QueueDetail q = null;
+				String qName = "";
+				try {
+					q = qList.get(i);
+					q.setConnectionFactory(factory);
+					qName = q.getQName();
+					System.out.println(qName);
+				} catch (Exception e) {
+					qName = "";
+					q = null;
+					System.err.println("Out Of bound error.");
+				}
+
+				if (q != null) {
+					q.refreshQueueDetail2(channel);
+					Label qNamelabel = labelQNameArray[i];
+					qNamelabel.setText(qName);
+					qNamelabel.setContextMenu(new MyContextMenu(q, factory));
+					Label totalMsgCount = labelTotalMsgArray[i];
+					totalMsgCount.setText(String.valueOf(q.getTotalMsg()));
+					Label totalConsumerCount = labelTotalConsumerArray[i];
+					totalConsumerCount.setText(String.valueOf(q.getTotalConsumer()));
+				} else {
+					Label qNamelabel = labelQNameArray[i];
+					qNamelabel.setText("");
+					Label totalMsgCount = labelTotalMsgArray[i];
+					totalMsgCount.setText("");
+					Label totalConsumerCount = labelTotalConsumerArray[i];
+					totalConsumerCount.setText("");
+				}
+			}
+		} catch (Exception e) {
+			makeErrorDialog(e, "Please login");
+			return;
+		}
+
+	}
+
+	private void initQueueGridPane() {
+		Label headerLable = new Label("Queue Name");
+		Label headerMsgCountLable = new Label("Msg Count");
+		Label headerConsumerLable = new Label("Consumer");
+		Label headerUnAckMsg = new Label("UnAck");
+
+		headerLable.getStyleClass().add("label3");
+		headerMsgCountLable.getStyleClass().add("label3");
+		headerConsumerLable.getStyleClass().add("label3");
+		headerUnAckMsg.getStyleClass().add("label3");
+
+		queuePane.add(headerLable, 0, 0, 12, 1);
+		queuePane.add(headerMsgCountLable, 1, 0, 3, 1);
+		queuePane.add(headerConsumerLable, 2, 0, 3, 1);
+		queuePane.add(headerUnAckMsg, 3, 0, 3, 1);
+
+		int qNameLabelWidth = 8;
+
+		for (int i = 0; i < 6; i++) {
+			labelQNameArray[i] = new Label();
+			labelTotalMsgArray[i] = new Label();
+			labelTotalConsumerArray[i] = new Label();
+
+			labelQNameArray[i].getStyleClass().add("label4");
+			labelTotalMsgArray[i].getStyleClass().add("label4");
+			labelTotalConsumerArray[i].getStyleClass().add("label4");
+
+			queuePane.add(labelQNameArray[i], 0, i + 1, qNameLabelWidth, 1);
+			queuePane.add(labelTotalMsgArray[i], 1, i + 1, 3, 1);
+			queuePane.add(labelTotalConsumerArray[i], 2, i + 1, 3, 1);
+		}
+
+	}
+
+	private String getModuleStringForQ(String module) {
+
+		String moduleString = "";
+		switch (module) {
+		case Constants.TRADE:
+			moduleString = "trades";
+			break;
+		case Constants.CASHFLOW:
+			moduleString = "cashflows";
+			break;
+		case Constants.POSITION:
+			moduleString = "positions";
+			break;
+		default:
+			break;
+		}
+
+		return moduleString;
+
+	}
+
+	private ArrayList<QueueDetail> getQueueList(String system, String mode, String module) {
+
+		ArrayList<QueueDetail> qList = new ArrayList<QueueDetail>();
+		String modeString = Constants.ON_DEMAND.equals(mode) ? "on_demand" : "eod";
+		String moduleString = getModuleStringForQ(module);
+
+		switch (mode) {
+		case Constants.ON_DEMAND:
+			qList.add(new QueueDetail(system + "_adaptor_on_demand_parameter_q"));
+			modeString = "on_demand";
+			moduleString = getModuleStringForQ(module);
+			qList.add(new QueueDetail(String.join("_", system, "adaptor", modeString, moduleString, "q")));
+			qList.add(new QueueDetail(String.join("_", system, moduleString, "q")));
+			break;
+		case Constants.EOD:
+			qList.add(new QueueDetail(system + "_adaptor_eod_parameter_q"));
+			qList.add(new QueueDetail(system + "_notifications_manifest_q"));
+			switch (module) {
+			case Constants.POSITION:
+				qList.add(new QueueDetail(system + "_adaptor_eod_positions_mnth_q"));
+				qList.add(new QueueDetail(system + "_adaptor_eod_positions_non_mnth_q"));
+				qList.add(new QueueDetail(system + "_eod_positions_q"));
+				break;
+			case Constants.CASHFLOW:
+				qList.add(new QueueDetail(system + "_adaptor_eod_cashflows_act_q"));
+				qList.add(new QueueDetail(system + "_adaptor_eod_cashflows_cfm_q"));
+				qList.add(new QueueDetail(system + "_eod_cashflows_q"));
+				break;
+			default:
+				break;
+			}
+			qList.add(new QueueDetail(system + "_notifications_q"));
+
+		default:
+			break;
+		}
+
+		return qList;
 	}
 
 	public void init() {
@@ -379,8 +544,8 @@ public class MainController implements Initializable {
 		errorAreaGen.setVisible(false);
 		errorAreaGen.setEditable(false);
 		errorAreaGen.setCenterShape(true);
-		
-		//sendButton.setDisable(true);
+
+		// sendButton.setDisable(true);
 
 		listForMainChoiceBox = new ArrayList<>();
 		listForMainChoiceBox.add(Constants.TRADE);
@@ -393,23 +558,29 @@ public class MainController implements Initializable {
 		prop1DisplayNamesCashflow.add("trade_num");
 		prop1DisplayNamesCashflow.add("cashflow_num");
 
-		CommandClassNew cashflowOD = new CommandClassNew(Constants.CASHFLOW + Constants.ON_DEMAND, "",prop1DisplayNamesCashflow, false, false, false, 0);
-		CommandClassNew cashflowODEOD = new CommandClassNew(Constants.CASHFLOW + Constants.ON_DEMAND_EOD, "",prop1DisplayNamesCashflow, true, false, false, 1);
-		CommandClassNew cashflowDP = new CommandClassNew(Constants.CASHFLOW + Constants.DYNAMIC_POLLING, "",prop1DisplayNamesCashflow, false, false, true, 0);
-		CommandClassNew cashflowEOD = new CommandClassNew(Constants.CASHFLOW + Constants.EOD, "", null, true, false,false, 0);
+		CommandClassNew cashflowOD = new CommandClassNew(Constants.CASHFLOW + Constants.ON_DEMAND, "",
+				prop1DisplayNamesCashflow, false, false, false, 0);
+		CommandClassNew cashflowODEOD = new CommandClassNew(Constants.CASHFLOW + Constants.ON_DEMAND_EOD, "",
+				prop1DisplayNamesCashflow, true, false, false, 1);
+		CommandClassNew cashflowDP = new CommandClassNew(Constants.CASHFLOW + Constants.DYNAMIC_POLLING, "",
+				prop1DisplayNamesCashflow, false, false, true, 0);
+		CommandClassNew cashflowEOD = new CommandClassNew(Constants.CASHFLOW + Constants.EOD, "", null, true, false,
+				false, 0);
 
 		commandFormatMap.put(cashflowOD.getKey(), cashflowOD);
 		commandFormatMap.put(cashflowODEOD.getKey(), cashflowODEOD);
 		commandFormatMap.put(cashflowDP.getKey(), cashflowDP);
 		commandFormatMap.put(cashflowEOD.getKey(), cashflowEOD);
 
-		CommandClassNew TradeEOD = new CommandClassNew(Constants.TRADE + Constants.ON_DEMAND, "",prop1DisplayNamesCashflow, true, true, true, 0);
+		CommandClassNew TradeEOD = new CommandClassNew(Constants.TRADE + Constants.ON_DEMAND, "",
+				prop1DisplayNamesCashflow, true, true, true, 0);
 		commandFormatMap.put(TradeEOD.getKey(), TradeEOD);
-		
+
 		List<String> prop1DisplayNamesPositionEOD = new ArrayList<>();
-		CommandClassNew positionEOD = new CommandClassNew(Constants.POSITION + Constants.EOD, "", prop1DisplayNamesPositionEOD, true, false,false, 0);
+		CommandClassNew positionEOD = new CommandClassNew(Constants.POSITION + Constants.EOD, "",
+				prop1DisplayNamesPositionEOD, true, false, false, 0);
 		commandFormatMap.put(positionEOD.getKey(), positionEOD);
-	
+
 	}
 
 	private String getType(String mode, String module) {
@@ -431,51 +602,19 @@ public class MainController implements Initializable {
 		return type;
 	}
 
-	
-//	private static String formatXML(Document document) throws TransformerException {
-//	    TransformerFactory transformerFactory = TransformerFactory
-//	            .newInstance();
-//	    Transformer transformer = transformerFactory.newTransformer();
-//	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//	    transformer.setOutputProperty(
-//	            "{http://xml.apache.org/xslt}indent-amount", "2");
-//	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-//	    DOMSource source = new DOMSource(document);
-//	    StringWriter strWriter = new StringWriter();
-//	    StreamResult result = new StreamResult(strWriter);
-//	 
-//	    transformer.transform(source, result);
-//	 
-//	    return strWriter.getBuffer().toString();
-//	 
-//	}
-	
-//	private static Document toXmlDocument(String str) throws ParserConfigurationException, SAXException, IOException {
-// 
-//        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-//                .newInstance();
-//        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-//        Document document = docBuilder.parse(new InputSource(new StringReader(
-//                str)));
-// 
-//        return document;
-//    }
-	
-//	 public static String format(String xml, Boolean ommitXmlDeclaration) throws IOException, SAXException, ParserConfigurationException {
-//         
-//	        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-//	        Document doc = db.parse(new InputSource(new StringReader(xml)));
-//	          
-//	        OutputFormat format = new OutputFormat(doc);
-//	        format.setIndenting(true);
-//	        format.setIndent(2);
-//	        format.setOmitXMLDeclaration(ommitXmlDeclaration);
-//	        format.setLineWidth(Integer.MAX_VALUE);
-//	        Writer outxml = new StringWriter();
-//	        XMLSerializer serializer = new XMLSerializer(outxml, format);
-//	        serializer.serialize(doc);
-//	          
-//	        return outxml.toString();
-//	          
-//	        }
+	public static String prettyFormat(String input, String indent) {
+		Source xmlInput = new StreamSource(new StringReader(input));
+		StringWriter stringWriter = new StringWriter();
+		try {
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", indent);
+			transformer.transform(xmlInput, new StreamResult(stringWriter));
+			return stringWriter.toString().trim();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

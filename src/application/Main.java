@@ -16,7 +16,9 @@ public class Main extends Application {
 			primaryStage.setTitle("CXL Adapter Command Utlity");
 			Image im = new Image("bulb.PNG");
 			primaryStage.getIcons().add(im);
-			primaryStage.setScene(new Scene(root));
+			Scene scene = new Scene(root);
+			scene.getStylesheets().add("application.css");
+			primaryStage.setScene(scene);
 			primaryStage.setMaximized(false);
 			primaryStage.show();
 		} catch(Exception e) {
