@@ -348,6 +348,7 @@ public class MainController implements Initializable {
 
 			channel.close();
 			connection.close();
+			Thread.sleep(1000);
 			updateQueuePane(systemName);
 		} catch (Exception e) {
 
@@ -401,7 +402,6 @@ public class MainController implements Initializable {
 				String qName = "";
 				try {
 					q = qList.get(i);
-					q.setConnectionFactory(factory);
 					qName = q.getQName();
 					System.out.println(qName);
 				} catch (Exception e) {

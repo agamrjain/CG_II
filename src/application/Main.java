@@ -13,7 +13,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			Parent root = FXMLLoader.load(getClass().getResource("mainScene.fxml"));
-			primaryStage.setTitle("CXL Adapter Command Utlity");
+			primaryStage.setTitle("CXL/TPT Adapter Command Utlity");
 			Image im = new Image("bulb.PNG");
 			primaryStage.getIcons().add(im);
 			Scene scene = new Scene(root);

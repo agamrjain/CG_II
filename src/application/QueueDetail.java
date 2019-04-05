@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.AMQP.Queue;
 
 public class QueueDetail {
@@ -14,7 +13,6 @@ public class QueueDetail {
 	private int totalConsumer;
 	private int totalMsg;
 	private int unackMsg;
-	private ConnectionFactory connectionFactory;
 
 	
 	public QueueDetail(String qName, int totalConsumer, int totalMsg, int unackMsg) {
@@ -65,24 +63,6 @@ public class QueueDetail {
 		this.unackMsg = unackMsg;
 	}
 	
-	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
-	
-	
-	public void refreshQueueDetail() throws IOException, TimeoutException {
-		try(Connection connection = connectionFactory.newConnection();
-				Channel channel = connection.createChannel()){
-			
-			Queue.DeclareOk p = channel.queueDeclarePassive(qName);
-			setTotalConsumer(p.getConsumerCount());
-			setTotalMsg(p.getMessageCount());
-		
-		} 
-		
-		
-	}
-	
 	public void refreshQueueDetail2(Channel channel) throws IOException, TimeoutException {
 		try{
 			Queue.DeclareOk p = channel.queueDeclarePassive(qName);
@@ -96,6 +76,21 @@ public class QueueDetail {
 	}
 
 
+	public void writeAllToFile(Channel channel) {
+	     	try {
+				channel.queueDeclare(qName, false, false, false, null);
+				System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+
+				DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+				    String message = new String(delivery.getBody(), "UTF-8");
+				    System.out.println(" [x] Received '" + message + "'");
+				};
+				channel.basicConsume(qName, true, deliverCallback, consumerTag -> { });
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
 
 	@Override
 	public String toString() {

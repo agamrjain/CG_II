@@ -87,7 +87,7 @@
       <Separator layoutX="214.0" layoutY="89.0" prefWidth="200.0" />
       <Separator layoutX="314.0" layoutY="100.0" orientation="VERTICAL" prefHeight="200.0" />
       <TextArea fx:id="cArea" layoutX="14.0" layoutY="349.0" prefHeight="211.0" prefWidth="220.0" />
-      <TextArea fx:id="errorArea" layoutX="332.0" layoutY="254.0" prefHeight="40.0" prefWidth="265.0" />
+      <TextArea fx:id="errorArea" layoutX="329.0" layoutY="254.0" prefHeight="40.0" prefWidth="392.0" />
       <Button fx:id="sendButton" layoutX="488.0" layoutY="310.0" mnemonicParsing="false" onAction="#sendButtonCallback" prefHeight="25.0" prefWidth="109.0" text="Send" />
       <Group>
          <children>
