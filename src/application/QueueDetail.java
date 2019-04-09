@@ -65,6 +65,7 @@ public class QueueDetail {
 	
 	public void refreshQueueDetail2(Channel channel) throws IOException, TimeoutException {
 		try{
+			
 			Queue.DeclareOk p = channel.queueDeclarePassive(qName);
 			setTotalConsumer(p.getConsumerCount());
 			setTotalMsg(p.getMessageCount());
@@ -74,6 +75,25 @@ public class QueueDetail {
 		
 		
 	}
+	
+//	public void refreshQueueDetail3(String url) {
+//		try {
+//			RestTemplate restTemplate = new RestTemplate();
+//			//QJsonMsg q = restTemplate.getForObject(url+qName, QJsonMsg.class);
+//			//HttpEntity<Json> req = new HttpEntity<QJsonMsg>(new QJsonMsg());
+//			ResponseEntity<QJsonMsg> q2 = restTemplate.exchange(url+qName, HttpMethod.GET, null  ,QJsonMsg.class);
+//			QJsonMsg x = q2.getBody();
+//			System.out.println(x.toString());
+//			
+//			//			setTotalConsumer(q.getConsumers());
+////			setTotalMsg((int)q.getMessages());
+////			setUnackMsg((int)q.getMessage_bytes_unacknowledged());
+//		} catch (RestClientException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//        
+//	}
 
 
 	public void writeAllToFile(Channel channel) {

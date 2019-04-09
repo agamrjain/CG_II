@@ -5,5 +5,9 @@
 	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/amqp-client-5.6.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/slf4j-api-1.7.26.jar"/>
+	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/org.springframework.core-3.0.4.release.jar"/>
+	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/spring-2.5.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/spring-web-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/Users/agajain/git/CG_II/jars/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

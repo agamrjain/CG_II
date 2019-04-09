@@ -391,12 +391,31 @@ public class MainController implements Initializable {
 		factory.setVirtualHost(vhost);
 		return factory;
 	}
+	
+//	private String getURLStringForRestCall(String a) {
+//		String host = !serverAddressFeild.getText().trim().equals("") ? serverAddressFeild.getText().trim()
+//				: Constants.DEFAULT_HOST;
+//		String username = !userNameFeild.getText().trim().equals("") ? userNameFeild.getText().trim()
+//				: Constants.DEFAULT_USERNAME;
+//		String password = !passwordFeild.getText().trim().equals("") ? passwordFeild.getText().trim()
+//				: Constants.DEFAULT_PASSWORD;
+//		String vhost;
+//		if (a.equals("CXL")) {
+//			vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim() : Constants.DEFAULT_CXL_vHOST;
+//		} else {
+//			vhost = !vHostFeild.getText().trim().equals("") ? vHostFeild.getText().trim() : Constants.DEFAULT_TPT_vHOST;
+//		}
+//
+//		host = host.equals("localhost") ? host+":15672":host;
+//		return "http://"+username+":"+password+"@"+host+"/api/queues/"+vhost+"/";
+//	}
 
 	private void updateQueuePane(String systemName) {
 		ArrayList<QueueDetail> qList = getQueueList(systemName.toLowerCase(), od_eod_choiceBox.getValue(),
 				mainchoiceBox.getValue());
 		ConnectionFactory factory = getConnectionFactory(getSystemName());
 		try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
+		//try {	
 			for (int i = 0; i < 6; i++) {
 				QueueDetail q = null;
 				String qName = "";
@@ -412,6 +431,9 @@ public class MainController implements Initializable {
 
 				if (q != null) {
 					q.refreshQueueDetail2(channel);
+//					if(channel.isOpen()) {
+//						q.refreshQueueDetail3(getURLStringForRestCall(systemName));
+//					}
 					Label qNamelabel = labelQNameArray[i];
 					qNamelabel.setText(qName);
 					qNamelabel.setContextMenu(new MyContextMenu(q, factory));

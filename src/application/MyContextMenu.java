@@ -111,9 +111,13 @@ public class MyContextMenu extends ContextMenu {
 			};
 			boolean autoAck = false;
 			String TASK_QUEUE_NAME = qDetail.getQName();
-			channel.basicConsume(TASK_QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
-			});
-			Thread.sleep(1000);
+			channel.basicConsume(TASK_QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {});
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Registering listener");
+			alert.setHeaderText(TASK_QUEUE_NAME +" listener registering");
+			alert.setContentText("Msgs will be written in:[" + folder+"]");
+			alert.showAndWait();
+			Thread.sleep(2000);
 		} catch (IOException | InterruptedException | TimeoutException e) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setTitle("Error Dialog");

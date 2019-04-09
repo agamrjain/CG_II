@@ -2,6 +2,7 @@ package application;
 
 public interface Constants {
 
+	boolean isLocal = true;
 	String TRADE = "Trade";
 	String CASHFLOW = "Cashflow";
 	String POSITION = "Position";
@@ -17,10 +18,10 @@ public interface Constants {
 	String MKT_S_CD_DISPLAY_NAME = "Mkt Snapshot CD";
 	String MKT_S_CD_IN_COMMAND = "mkt_snapshot_cd";
 	
-	String DEFAULT_HOST = "kst-rabbitmq-nonprod.kochind.com";
-	String DEFAULT_USERNAME = "krishna.ammanabrolu@kochind.com";
-	String DEFAULT_PASSWORD = "krishnaammanabrolu2018";
-	String DEFAULT_CXL_vHOST = "dev2_cxlAdapter";
+	String DEFAULT_HOST = isLocal ? "localhost":"kst-rabbitmq-nonprod.kochind.com";
+	String DEFAULT_USERNAME = isLocal ? "guest":"krishna.ammanabrolu@kochind.com";
+	String DEFAULT_PASSWORD = isLocal ? "guest":"krishnaammanabrolu2018";
+	String DEFAULT_CXL_vHOST = isLocal ? "v2":"dev2_cxlAdapter";
 	String DEFAULT_TPT_vHOST = "/dev3_tptadapter";
 
 	
