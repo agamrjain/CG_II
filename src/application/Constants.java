@@ -2,7 +2,7 @@ package application;
 
 public interface Constants {
 
-	boolean isLocal = true;
+	boolean isLocal = false;
 	String TRADE = "Trade";
 	String CASHFLOW = "Cashflow";
 	String POSITION = "Position";
