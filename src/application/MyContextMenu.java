@@ -88,25 +88,31 @@ public class MyContextMenu extends ContextMenu {
 
 	}
 
-	public void writeAllToFile(String folder) {
+	public void writeAllToFile(String folderPath) {
 		try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
 			DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 				String messageBody = new String(delivery.getBody(), "UTF-8");
-				BasicProperties a = delivery.getProperties();
-				Map<String, Object> h = a.getHeaders();
+				BasicProperties basicProp = delivery.getProperties();
+				Map<String, Object> h = basicProp.getHeaders();
 				StringBuilder fileNameBuilder = new StringBuilder();
-				h.forEach((k, v) -> fileNameBuilder.append(v).append("_"));
-				String fileName = folder + "\\" + fileNameBuilder.toString() + ".xml";
-				try {
-					FileWriter fileWriter = new FileWriter(fileName);
+				h.forEach((k, v) -> {
+					if (!k.contains("time"))
+					fileNameBuilder.append(v).append("_");
+					
+				});
+				String fileName = fileNameBuilder.toString();
+				fileName = fileName.replaceAll(":", "-");
+				fileName = fileName.replaceAll(" ", "-");
+				fileName = fileName.replaceAll(".", "-");
+				String completeFilePath = folderPath + "\\" + fileNameBuilder.toString() + ".xml";
+ 				try {
+					File file = new File(completeFilePath);
+					FileWriter fileWriter = new FileWriter(file);
 					fileWriter.write(messageBody);
+					fileWriter.flush();
 					fileWriter.close();
 				} catch (Exception e) {
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.setTitle("Error Dialog");
-					alert.setHeaderText("Unable to write to file");
-					alert.setContentText(e.toString());
-					alert.showAndWait();
+
 				}
 			};
 			boolean autoAck = false;
@@ -115,7 +121,7 @@ public class MyContextMenu extends ContextMenu {
 			Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setTitle("Registering listener");
 			alert.setHeaderText(TASK_QUEUE_NAME +" listener registering");
-			alert.setContentText("Msgs will be written in:[" + folder+"]");
+			alert.setContentText("Msgs will be written in:[" + folderPath+"]");
 			alert.showAndWait();
 			Thread.sleep(2000);
 		} catch (IOException | InterruptedException | TimeoutException e) {
